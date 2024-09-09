@@ -33,7 +33,7 @@ export class TerraformStateBucketStack extends TerraformStack {
       env: DeploymentEnvironment,
       props: TerraformStateBucketStackProps,
   ) {
-    const id = `terraform-state-${env.name}-${env.location}`;
+    const id = `terraform-state-${env.name}-${props.region}`;
     super(scope, id);
     new GoogleProvider(this, 'google', {
       project: props.projectId,
