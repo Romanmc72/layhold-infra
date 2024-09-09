@@ -1,0 +1,13 @@
+*.d.ts
+*.js
+node_modules
+cdktf.out
+cdktf.log
+# We do want to keep the local state for the state buckets themselves
+# *terraform.*.tfstate*
+.gen
+.terraform
+tsconfig.tsbuildinfo
+!jest.config.js
+!setup.js
+!.eslintrc.js
