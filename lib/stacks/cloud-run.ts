@@ -91,7 +91,7 @@ export class CloudRunStack extends BaseGCPStack {
       maxScale: 1,
       memory: Memory.gigabytes(1),
       serviceAccount: this.serviceAccount,
-      ports: [8088],
+      ports: [3000],
       dependsOn: [serviceAdmin],
       vpcAccessConnectorId: props.vpcAccessConnectorId,
     });
