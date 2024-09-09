@@ -1,5 +1,6 @@
 import {GcsBackend} from 'cdktf';
 import {IBaseGCPStack} from '../base';
+import {APP_NAME} from '../../constants';
 
 /**
  * Helper function to return the Terraform backend bucket's name given a
@@ -8,7 +9,7 @@ import {IBaseGCPStack} from '../base';
  * @return {string} - The Terraform Backend Bucket name
  */
 export function getBackendBucketName(project: string): string {
-  return `${project}-terraform-backend`;
+  return `${APP_NAME}-${project}-terraform-backend`;
 }
 
 /**

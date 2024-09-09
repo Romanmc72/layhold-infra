@@ -66,6 +66,18 @@ This can all then be deployed (at least to the dev account) via the following co
 cdktf deploy --auto-approve '*-dev*'
 ```
 
+### On Initial deployment
+
+The first time you deploy a new environment, you will need to deploy the terraform state stack and save its state to the git repo here. The state stack simply creates and manages the state bucket which will serve as the backend for the rest of the application's infrastructure as code. The state stack should essentially never change, or if it does that change needs to be coordinated with all developers who are using the code here.
+
+To deploy the state stack use this command to deploy just the development stack:
+
+```
+cdktf deploy terraform-state-dev-us-central1
+```
+
+Then add and commit the resulting generated state files to version control.
+
 ## Locks
 
 If you are facing issues with the lock files from terraform that are not released because of a failed deployment, you will need to force unlock them. To find all of the locked stacks you will need to run:
