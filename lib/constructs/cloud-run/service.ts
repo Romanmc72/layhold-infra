@@ -1,3 +1,4 @@
+import {join} from 'path';
 import {
   CloudRunService,
   CloudRunServiceConfig,
@@ -7,6 +8,9 @@ import {
 import {
   SecretManagerSecret,
 } from '@cdktf/provider-google/lib/secret-manager-secret';
+import {
+  SecretManagerSecretIamMember,
+} from '@cdktf/provider-google/lib/secret-manager-secret-iam-member';
 import {
   ServiceAccount,
 } from '@cdktf/provider-google/lib/service-account';
@@ -125,6 +129,17 @@ export interface CloudRunServiceWrapperProps extends Omit<
  */
 export class CloudRunServiceWrapper extends CloudRunService {
   /**
+   * The fully qualified service name for use in granting IAM member/bindings.
+   * Of the form:
+   * projects/{{project}}/locations/{{location}}/services/{{service}}
+   * Creating this ourself otherwise the location is set to the "zone"
+   * not the "region" and is registered incorrectly thus making the request
+   * for the service an invalid 404.
+   * @see https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service_iam
+   */
+  public readonly serviceName: string;
+
+  /**
    * Instantiates the cloud run service
    * @param {Construct} scope - the stack this service lives in
    * @param {string} id - the unique service Id
@@ -160,16 +175,19 @@ export class CloudRunServiceWrapper extends CloudRunService {
     // Mounting secrets as attached volumes for real-time and read-only
     // secret synchronization
     const volumes: CloudRunServiceTemplateSpecVolumes[] = [];
+    const secretMountDirectory = '/mounts/secrets/';
     const volumeMounts:
       CloudRunServiceTemplateSpecContainersVolumeMounts[] = [];
     if (props.secrets) {
       annotations['run.googleapis.com/secrets'] = props.secrets.map(
-          (secret) => `${secret.secretId}:${secret.id}`,
+          (secret) =>
+            `${secret.secretId}:${secret.id}`,
       ).join(',');
-      props.secrets.forEach((secret) => {
+      props.secrets.forEach((secret, index) => {
         volumeMounts.push({
+          // should only have alphanumeric characters, hyphens and underscores
           name: secret.secretId,
-          mountPath: '/mounts/secrets/',
+          mountPath: join(secretMountDirectory, secret.secretId),
         });
         volumes.push({
           name: secret.secretId,
@@ -179,12 +197,37 @@ export class CloudRunServiceWrapper extends CloudRunService {
             defaultMode: 444,
             items: [{
               key: 'latest',
-              path: secret.secretId,
+              path: 'secret',
             }],
           },
         });
+        new SecretManagerSecretIamMember(
+            scope,
+            `${id}-access-secret-${index}`,
+            {
+              role: 'roles/secretmanager.secretAccessor',
+              member: `serviceAccount:${props.serviceAccount.email}`,
+              secretId: secret.secretId,
+            },
+        );
       });
     }
+    // Adding the secret's file as an env var that matches the name of the
+    // secret itself to make it so you don't need to remember the mount
+    // directory location.
+    const secretsEnvVars: {[s: string]: string} = props.secrets?.reduce(
+        (secretMapping, secret) => (
+          {
+            ...secretMapping,
+            [secret.secretId]: join(
+                secretMountDirectory,
+                secret.secretId,
+                'secret',
+            ),
+          }
+        ),
+        {},
+    ) ?? {};
 
     // translating the input props to the crazy template.spec syntax
     const properties: CloudRunServiceConfig = {
@@ -208,9 +251,9 @@ export class CloudRunServiceWrapper extends CloudRunService {
                 name: 'http1',
               };
             }),
-            env: Object.keys(props.env ?? {}).map((name) => {
-              return {name, value: props.env![name]};
-            }),
+            env: Object.entries({...props.env, ...secretsEnvVars}).map(
+                ([name, value]) => ({name, value}),
+            ),
             volumeMounts,
           }],
           volumes,
@@ -218,5 +261,13 @@ export class CloudRunServiceWrapper extends CloudRunService {
       },
     };
     super(scope, id, {...props, ...properties});
+    this.serviceName = join(
+        'projects',
+        props.project,
+        'locations',
+        props.region,
+        'services',
+        this.name,
+    );
   }
 }

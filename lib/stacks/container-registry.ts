@@ -14,6 +14,7 @@ import {
   BaseGCPStack,
   BaseGCPStackProps,
 } from '../constructs';
+import {APP_NAME} from '../constants';
 import {DeploymentEnvironment} from '../config';
 
 /**
@@ -95,7 +96,7 @@ export class ContainerRegistryStack extends BaseGCPStack {
     super(scope, 'container-registry', env.name, props);
     const imagePushServiceAccount = new ServiceAccount(
         this,
-        'push-image-service-account',
+        `${APP_NAME}-push-image-service-account`,
         {
           accountId: 'image-push',
           description: 'Allows users to impersonate it and ' +

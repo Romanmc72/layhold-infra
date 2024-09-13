@@ -1,4 +1,3 @@
-import {join} from 'path';
 import {
   CloudRunDomainMapping,
 } from '@cdktf/provider-google/lib/cloud-run-domain-mapping';
@@ -17,10 +16,11 @@ import {
   BaseGCPStackProps,
   CloudRunServiceWrapper,
   Memory,
+  SecretWithVersion,
 } from '../constructs';
-import {IMAGE_NAME} from '../constants';
-import {DeploymentEnvironment} from '../config/environments';
-import { RegistryName } from './container-registry';
+import {APP_NAME, IMAGE_NAME} from '../constants';
+import {DeploymentEnvironment, ENV_NAMES} from '../config/environments';
+import {RegistryName} from './container-registry';
 
 export interface CloudRunStackProps extends BaseGCPStackProps {
   /**
@@ -57,7 +57,7 @@ export class CloudRunStack extends BaseGCPStack {
   ) {
     super(scope, `cloud-run`, env.name, props);
     this.serviceAccount = new ServiceAccount(this, 'service-account', {
-      accountId: 'cloud-run-server',
+      accountId: `${APP_NAME}-cloud-run-server`,
       description: 'Responsible for executing the Cloud Run Server',
       project: props.projectId,
     });
@@ -70,7 +70,7 @@ export class CloudRunStack extends BaseGCPStack {
           project: this.provider.project!,
         },
     );
-    const imageTag = new TerraformVariable(this, 'image-tag', {
+    const imageTag = new TerraformVariable(this, 'imageTag', {
       default: 'latest',
       description: 'While building and pushing the Docker image, the tag ' +
         'should be specified here so Cloud Run can deploy the correct image ' +
@@ -90,6 +90,20 @@ export class CloudRunStack extends BaseGCPStack {
       imageTag: imageTag.value,
       maxScale: 1,
       memory: Memory.gigabytes(1),
+      secrets: [
+        new SecretWithVersion(this, 'database-url', {
+          secretId: 'NEON_DATABASE_URL',
+          replication: {automatic: true},
+        }),
+        new SecretWithVersion(this, 'main-encryption-key', {
+          secretId: 'RAILS_MAIN_ENCRYPTION_KEY',
+          replication: {automatic: true},
+        }),
+        new SecretWithVersion(this, 'encrypted-secrets', {
+          secretId: 'RAILS_ENCRYPTED_SECRETS',
+          replication: {automatic: true},
+        }),
+      ],
       serviceAccount: this.serviceAccount,
       ports: [3000],
       dependsOn: [serviceAdmin],
@@ -98,36 +112,29 @@ export class CloudRunStack extends BaseGCPStack {
     new CloudRunServiceIamMember(this, 'allow-requests', {
       role: 'roles/run.invoker',
       member: 'domain:r0m4n.com',
-      // Using the fully qualified service link because the location argument
-      // otherwise gets set to the "zone" not the "region" and is registered
-      // incorrectly thus making the request for the service an invalid 404.
-      // @see https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service_iam
-      // projects/{{project}}/locations/{{location}}/services/{{service}}
-      service: join(
-          'projects',
-          this.provider.project!,
-          'locations',
-          this.provider.region!,
-          'services',
-          cloudRunService.name,
-      ),
+      service: cloudRunService.serviceName,
     });
     new ProjectIamMember(this, 'access-firestore', {
       role: 'roles/datastore.user',
+      // TODO: create an IAM Service Account wrapper that just returns this
+      // string so we don't have to keep recreating it to grant stuff
       member: `serviceAccount:${this.serviceAccount.email}`,
       project: env.projectId,
     });
-    // After this is created, you will need to go to the DNS hosting provider
-    // and register a record for the new domain/subdomain.
-    new CloudRunDomainMapping(this, 'domain-map', {
-      name: `${env.isProd ? '' : env.name + '.'}layhold.xyz`,
-      location: env.region,
-      metadata: {
-        namespace: this.provider.project!,
-      },
-      spec: {
-        routeName: cloudRunService.name,
-      },
-    });
+    // Skipping DNS setup for personal development environment
+    if (env.name !== ENV_NAMES.DEV) {
+      // After this is created, you will need to go to the DNS hosting provider
+      // and register a record for the new domain/subdomain.
+      new CloudRunDomainMapping(this, 'domain-map', {
+        name: `${env.isProd ? '' : env.name + '.'}layhold.xyz`,
+        location: env.region,
+        metadata: {
+          namespace: this.provider.project!,
+        },
+        spec: {
+          routeName: cloudRunService.name,
+        },
+      });
+    }
   }
 }

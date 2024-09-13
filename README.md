@@ -73,10 +73,24 @@ The first time you deploy a new environment, you will need to deploy the terrafo
 To deploy the state stack use this command to deploy just the development stack:
 
 ```
+# This will deploy just for development,
+# to deploy all state stacks use `cdktf deploy 'terraform-state-*'`
+# You will need to be logged into the account you are trying
+# to deploy to though, so maybe to 1 at a time.
 cdktf deploy terraform-state-dev-us-central1
 ```
 
 Then add and commit the resulting generated state files to version control.
+
+## The rest of the time after initial deployment
+
+After initial deployment, use this command to redeploy all the stacks for the "dev" environment. Swap out "dev" with "prod" or any other valid environment name you have configured, and make sure you log in for that account too.
+
+```
+cdktf deploy '*-dev-*'
+```
+
+and add the `--auto-approve` flag if you don't want to check the deployment plan and just want to deploy it #YOLO.
 
 ## Locks
 
