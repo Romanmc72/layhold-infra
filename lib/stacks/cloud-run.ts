@@ -103,6 +103,10 @@ export class CloudRunStack extends BaseGCPStack {
           secretId: 'RAILS_ENCRYPTED_SECRETS',
           replication: {automatic: true},
         }),
+        new SecretWithVersion(this, 'email-api-key', {
+          secretId: 'LAYHOLD_EMAIL_SECRET',
+          replication: {automatic: true},
+        }),
       ],
       serviceAccount: this.serviceAccount,
       ports: [3000],
