@@ -16,7 +16,8 @@
     "upgrade": "npm i cdktf@latest cdktf-cli@latest",
     "upgrade:next": "npm i cdktf@next cdktf-cli@next",
     "lint": "eslint ./main.ts jest.config.js setup.js './lib/*.ts' './lib/**/*.ts' '__tests__/*.ts' '__tests__/**/*.ts'",
-    "lint-fix": "npm run lint -- --fix"
+    "lint-fix": "npm run lint -- --fix",
+    "login": "gcloud auth application-default login && gcloud auth login && gcloud auth configure-docker \"${GCP_REGION:-us-central1}-docker.pkg.dev\""
   },
   "engines": {
     "node": ">=14.0"

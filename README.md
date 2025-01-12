@@ -6,7 +6,6 @@ This is the backend infrastructure on GCP for the Layhold app. It will create an
 
 There are a few things that one needs to create/do/install
 
-
 ### GCP Specific
 
 - You must be logged into the gcloud application default credentials.
@@ -88,6 +87,13 @@ After initial deployment, use this command to redeploy all the stacks for the "d
 
 ```
 cdktf deploy '*-dev-*'
+```
+
+If you are deploying a specific version of the docker image you have pushed to artifact registry, then you can reference the specific version using this env var:
+
+```sh
+# Use the tag from the repo that you built and pushed
+export TF_VAR_imageTag=0.0.0
 ```
 
 and add the `--auto-approve` flag if you don't want to check the deployment plan and just want to deploy it #YOLO.
