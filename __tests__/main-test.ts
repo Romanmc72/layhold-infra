@@ -1,5 +1,5 @@
 import 'cdktf/lib/testing/adapters/jest';
-import { Testing } from 'cdktf';
+import {Testing} from 'cdktf';
 import {CloudRunService} from '@cdktf/provider-google/lib/cloud-run-service';
 import {DEV_ENVIRONMENT, deployEnvironment} from '../lib';
 

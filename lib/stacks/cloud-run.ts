@@ -88,6 +88,7 @@ export class CloudRunStack extends BaseGCPStack {
       },
       imageName: IMAGE_NAME,
       imageTag: imageTag.value,
+      minScale: 1,
       maxScale: 1,
       memory: Memory.gigabytes(1),
       secrets: [
