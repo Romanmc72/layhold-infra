@@ -6,15 +6,9 @@ import {
   RegistryName,
   ServicesStack,
   TerraformStateBucketStack,
+  WorkloadIdentityPoolStack,
 } from '../stacks';
 import {BaseGCPStackProps} from '../constructs';
-
-export interface ApplicationStacks {
-  cloudRunStack: CloudRunStack;
-  containerRegistryStack: ContainerRegistryStack;
-  serviceStack: ServicesStack;
-  terraformStateBucketStack: TerraformStateBucketStack;
-}
 
 /**
  * Create a single environment.
@@ -40,10 +34,19 @@ export function deployEnvironment(
     stateBucket: stateBucketStack.stateBucket,
     dependsOn: [serviceStack],
   };
-  const registry = new ContainerRegistryStack(
+  const workloadIdPoolStack = new WorkloadIdentityPoolStack(
       app,
       environment,
       baseStackProps,
+  );
+  const registry = new ContainerRegistryStack(
+      app,
+      environment,
+      {
+        ...baseStackProps,
+        workloadIdentityPoolName:
+          workloadIdPoolStack.ghWorkloadIdentityPoolName,
+      },
   );
   new CloudRunStack(app, environment, {
     ...baseStackProps,

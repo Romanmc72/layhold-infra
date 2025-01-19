@@ -4,18 +4,14 @@ import {
 import {
   ArtifactRegistryRepositoryIamMember,
 } from '@cdktf/provider-google/lib/artifact-registry-repository-iam-member';
-import {ServiceAccount} from '@cdktf/provider-google/lib/service-account';
-import {
-  ServiceAccountIamBinding,
-} from '@cdktf/provider-google/lib/service-account-iam-binding';
 import {Construct} from 'constructs';
 
+import {DeploymentEnvironment} from '../config';
+import {IMAGE_REPO} from '../constants';
 import {
   BaseGCPStack,
   BaseGCPStackProps,
 } from '../constructs';
-import {APP_NAME} from '../constants';
-import {DeploymentEnvironment} from '../config';
 
 /**
  * The list of available formats, the Terraform and GCP Providers do not give
@@ -71,6 +67,19 @@ export interface RegistryMapping {
 }
 
 /**
+ * The properties required to create the container registry stack.
+ */
+export interface ContainerRegistryStackProps extends BaseGCPStackProps {
+  /**
+   * The name of the workload identity pool that will
+   * be responsible for managing assets in the container registry.
+   * @example `projects/${project_number}/locations/global` +
+   *  `/workloadIdentityPools/${workload_identity_pool_id}`
+   */
+  workloadIdentityPoolName: string;
+}
+
+/**
  * This stack contains resources related specifically to the Firestore
  * database in GCP that we will use as the backend for our application.
  */
@@ -85,34 +94,20 @@ export class ContainerRegistryStack extends BaseGCPStack {
    * @param {Construct} scope - The App within which this stack lives.
    * @param {DeploymentEnvironment} env - The environment the stack will
    * deploy to.
-   * @param {BaseGCPStackProps} props - The properties specifically for this
-   * database stack.
+   * @param {ContainerRegistryStackProps} props - The properties
+   * specifically for this stack.
    */
   constructor(
       scope: Construct,
       env: DeploymentEnvironment,
-      props: BaseGCPStackProps,
+      props: ContainerRegistryStackProps,
   ) {
     super(scope, 'container-registry', env.name, props);
-    const imagePushServiceAccount = new ServiceAccount(
-        this,
-        `${APP_NAME}-push-image-service-account`,
-        {
-          accountId: 'image-push',
-          description: 'Allows users to impersonate it and ' +
-          'push images to the Artifact Registry',
-        },
-    );
-    new ServiceAccountIamBinding(this, 'allow-r0m4n-assume', {
-      members: ['domain:r0m4n.com'],
-      role: 'roles/iam.serviceAccountTokenCreator',
-      serviceAccountId: imagePushServiceAccount.name,
-    });
     Object.entries(REGISTRIES).forEach(([registryName, description]) =>
       this.registryFactory(
           registryName,
           description,
-          imagePushServiceAccount,
+          `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${IMAGE_REPO}`,
       ),
     );
   }
@@ -122,14 +117,14 @@ export class ContainerRegistryStack extends BaseGCPStack {
    * to the internal registry mapping
    * @param {string} name - The name of the registry
    * @param {RegistrySettings} settings - The registry settings object
-   * @param {ServiceAccount} pushServiceAccount -The service account that can
-   * write to the registry
+   * @param {string} grantPrincipal - The princpal that will write to
+   * the registry
    * @return {void}
    */
   private registryFactory(
       name: string,
       settings: RegistrySettings,
-      pushServiceAccount: ServiceAccount,
+      grantPrincipal: string,
   ): void {
     const registry = new ArtifactRegistryRepository(
         this,
@@ -148,7 +143,7 @@ export class ContainerRegistryStack extends BaseGCPStack {
       location: registry.location,
       repository: registry.name,
       role: 'roles/artifactregistry.writer',
-      member: `serviceAccount:${pushServiceAccount.email}`,
+      member: grantPrincipal,
     });
   }
 
