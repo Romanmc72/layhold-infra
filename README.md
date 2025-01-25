@@ -98,6 +98,32 @@ export TF_VAR_imageTag=0.0.0
 
 and add the `--auto-approve` flag if you don't want to check the deployment plan and just want to deploy it #YOLO.
 
+## Automated Deployment
+
+I am attempting to set up the federated workload identity provider that will use oidc access tokens to securely authenticate github actions to a very specific set of permissions. I do not presently have it working, but will be storing relevant info here that helped me during setup.
+
+One needs the `repository_owner_id` which as far as I can tell is *supposed to be* a number but in the case of the GraphQL API endpoint it is just a string. Here is what I did to grab that value.
+
+Create a personal access token in github (settings > developer settings > personal access tokens (classic)) then create a new one and give it full repo access. Next copy it to the script below to see it in action.
+
+```
+# Set it to the value that you created from your profile
+export GH_ACCESS_TOKEN='****'
+curl \
+    -X POST \
+    -H "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -d '{ "query": "query {  repository (name: \"rails-app\", owner: \"layhold\") { owner { id } }}" }' \
+    https://api.github.com/graphql
+```
+
+Running the above should yield a response like:
+
+```
+{"data":{"repository":{"owner":{"id":"U_kgDOBueO8w"}}}}
+```
+
+
 ## Locks
 
 If you are facing issues with the lock files from terraform that are not released because of a failed deployment, you will need to force unlock them. To find all of the locked stacks you will need to run:
