@@ -41,6 +41,21 @@ export const DEV_ENVIRONMENT: DeploymentEnvironment = {
   zone: process.env.LAYHOLD_DEV_PROJECT_ZONE!,
 };
 
+/**
+ * The production environment for production purposes.
+ */
+export const PROD_ENVIRONMENT: DeploymentEnvironment = {
+  isProd: true,
+  location: 'US',
+  name: ENV_NAMES.PROD,
+  projectId: 'layhold-app',
+  projectName: 'layhold-app',
+  projectNumber: 625223699075,
+  region: 'us-central1',
+  zone: 'us-central1-a',
+};
+
 export const ENVIRONMENTS: DeploymentEnvironment[] = [
   DEV_ENVIRONMENT,
+  PROD_ENVIRONMENT,
 ];
