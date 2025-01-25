@@ -43,6 +43,7 @@ export class ServicesStack extends BaseGCPStack {
       'pubsub',
       // Cloud Run
       'run',
+      'secretmanager',
     ];
     servicesToEnable.forEach((service: string) => new ProjectService(
         this,
