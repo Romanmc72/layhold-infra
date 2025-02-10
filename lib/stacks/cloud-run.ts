@@ -77,8 +77,8 @@ export class CloudRunStack extends BaseGCPStack {
     });
     const cloudRunService = new CloudRunServiceWrapper(this, 'server', {
       name: RegistryName.RAILS_APP,
-      region: this.provider.region!,
-      project: this.provider.project!,
+      region: props.region,
+      project: props.projectId,
       registryPath: props.registryPath,
       env: {
         GO_LOG: env.isProd ? 'info' : 'debug',
