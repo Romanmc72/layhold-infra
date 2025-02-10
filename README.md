@@ -104,23 +104,23 @@ I am attempting to set up the federated workload identity provider that will use
 
 One needs the `repository_owner_id` which as far as I can tell is *supposed to be* a number but in the case of the GraphQL API endpoint it is just a string. Here is what I did to grab that value.
 
-Create a personal access token in github (settings > developer settings > personal access tokens (classic)) then create a new one and give it full repo access. Next copy it to the script below to see it in action.
+Create a personal access token in github (settings > developer settings > personal access tokens (classic)) then create a new one and give it full repo access. Next copy it to the script below to see it in action. (Note, I have JQ installed to parse the json response. If you do not, remove the last line and the trailing `\` on the second to last line)
 
-```
+```sh
 # Set it to the value that you created from your profile
 export GH_ACCESS_TOKEN='****'
-curl \
-    -X POST \
-    -H "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
-    -H 'Content-Type: application/json' \
-    -d '{ "query": "query {  repository (name: \"rails-app\", owner: \"layhold\") { owner { id } }}" }' \
-    https://api.github.com/graphql
+curl -L -s \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  https://api.github.com/repos/Romanmc72/layhold-infra \
+  | jq -r '.owner.id'
 ```
 
 Running the above should yield a response like:
 
 ```
-{"data":{"repository":{"owner":{"id":"U_kgDOBueO8w"}}}}
+123456789
 ```
 
 

@@ -72,9 +72,7 @@ export class CloudRunStack extends BaseGCPStack {
     );
     const imageTag = new TerraformVariable(this, 'imageTag', {
       default: 'latest',
-      description: 'While building and pushing the Docker image, the tag ' +
-        'should be specified here so Cloud Run can deploy the correct image ' +
-        'version.',
+      description: 'The image tag to deploy from the container registry repo.',
       type: 'string',
     });
     const cloudRunService = new CloudRunServiceWrapper(this, 'server', {

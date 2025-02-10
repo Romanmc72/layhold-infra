@@ -3,11 +3,13 @@ import {DeploymentEnvironment} from './environments';
 import {
   CloudRunStack,
   ContainerRegistryStack,
+  IamBindingStack,
   RegistryName,
   ServicesStack,
   TerraformStateBucketStack,
   WorkloadIdentityPoolStack,
 } from '../stacks';
+import {IMAGE_REPO} from '../constants';
 import {BaseGCPStackProps} from '../constructs';
 
 /**
@@ -38,6 +40,15 @@ export function deployEnvironment(
       app,
       environment,
       baseStackProps,
+  );
+  new IamBindingStack(
+      app,
+      environment, {
+        ...baseStackProps,
+        githubDeploymentRepo: IMAGE_REPO,
+        workloadIdentityPoolName:
+          workloadIdPoolStack.ghWorkloadIdentityPoolName,
+      },
   );
   const registry = new ContainerRegistryStack(
       app,

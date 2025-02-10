@@ -1,3 +1,4 @@
+/* eslint max-len: 0 */
 import {
   IamWorkloadIdentityPool,
 } from '@cdktf/provider-google/lib/iam-workload-identity-pool';
@@ -19,6 +20,19 @@ export interface WorkloadIdentityPoolStackProps extends BaseGCPStackProps {}
  * The stack that create the federated workload identity constructs in GCP so
  * that github actions can automatically connect and run GCP related tasks
  * using short lived access tokens.
+ *
+ * @example Inside of a .github/workflows/whatever.yaml, you will
+ * need to leverage the
+ * `IamWorkloadIdentityPoolProvider.workloadIdentityPoolProviderId`
+ * attributes from here inside of the auth step that looks like this
+ *
+ * ```yaml
+ * - name: Log into GCP
+ *     uses: 'google-github-actions/auth@v2'
+ *     with:
+ *       project_id: $PROJECT_NUMBER
+ *       workload_identity_provider: projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${IamWorkloadIdentityPool.workloadIdentityPoolId}/providers/${IamWorkloadIdentityPoolProvider.workloadIdentityPoolProviderId}
+ * ```
  */
 export class WorkloadIdentityPoolStack extends BaseGCPStack {
   /** The name of the github workload pool. */
