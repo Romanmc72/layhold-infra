@@ -75,7 +75,6 @@ export class CloudRunStack extends BaseGCPStack {
       description: 'The image tag to deploy from the container registry repo.',
       type: 'string',
     });
-    console.log(`project: ${props.projectId}, region: ${props.region} at stack level`);
     const cloudRunService = new CloudRunServiceWrapper(this, 'server', {
       name: RegistryName.RAILS_APP,
       region: props.region,
