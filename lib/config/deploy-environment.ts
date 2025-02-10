@@ -36,6 +36,8 @@ export function deployEnvironment(
     stateBucket: stateBucketStack.stateBucket,
     dependsOn: [serviceStack],
   };
+  console.log('env: ' + JSON.stringify(environment));
+  console.log('stackProps: ' + JSON.stringify(baseStackProps));
   const workloadIdPoolStack = new WorkloadIdentityPoolStack(
       app,
       environment,
