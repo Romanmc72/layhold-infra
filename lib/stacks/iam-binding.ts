@@ -2,7 +2,6 @@ import {ProjectIamMember} from '@cdktf/provider-google/lib/project-iam-member';
 import {Construct} from 'constructs';
 
 import {DeploymentEnvironment} from '../config';
-import {INFRA_REPO} from '../constants';
 import {
   BaseGCPStack,
   BaseGCPStackProps,
@@ -19,6 +18,10 @@ export interface IamBindingStackProps extends BaseGCPStackProps {
    *  `/workloadIdentityPools/${workload_identity_pool_id}`
    */
   workloadIdentityPoolName: string;
+  /**
+   * The github repository that is allowed to modify our GCP projects.
+   */
+  githubDeploymentRepo: string;
 }
 
 /**
@@ -39,10 +42,15 @@ export class IamBindingStack extends BaseGCPStack {
       props: IamBindingStackProps,
   ) {
     super(scope, 'iam-bindings', env.name, props);
+
+    /**
+     * This grants a particular github repo the rights to deploy this
+     * infrastructure to our GCP projects.
+     */
     new ProjectIamMember(this, `infra-permissions`, {
       project: this.provider.project!,
       role: 'roles/writer',
-      member: `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${INFRA_REPO}`,
+      member: `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${props.githubDeploymentRepo}`,
     });
   }
 }

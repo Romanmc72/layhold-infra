@@ -9,19 +9,18 @@ import {
   TerraformStateBucketStack,
   WorkloadIdentityPoolStack,
 } from '../stacks';
-import {BaseGCPStack, BaseGCPStackProps} from '../constructs';
+import {IMAGE_REPO} from '../constants';
+import {BaseGCPStackProps} from '../constructs';
 
 /**
  * Create a single environment.
  * @param {App} app The overall app this environment will exist in.
  * @param {DeploymentEnvironment} environment The settings specific to
- * @param {string} imageTag The image to deploy
  * this environment.
  */
 export function deployEnvironment(
     app: App,
     environment: DeploymentEnvironment,
-    imageTag: string,
 ): void {
   const stateBucketStack = new TerraformStateBucketStack(
       app,
@@ -46,6 +45,7 @@ export function deployEnvironment(
       app,
       environment, {
         ...baseStackProps,
+        githubDeploymentRepo: IMAGE_REPO,
         workloadIdentityPoolName:
           workloadIdPoolStack.ghWorkloadIdentityPoolName,
       },
@@ -63,6 +63,5 @@ export function deployEnvironment(
     ...baseStackProps,
     registryPath: registry.getRegistryPath(RegistryName.RAILS_APP),
     dependsOn: [serviceStack, registry],
-    imageTag,
   });
 }

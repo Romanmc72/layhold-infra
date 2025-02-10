@@ -8,7 +8,7 @@ import {
 import {Construct} from 'constructs';
 
 import {DeploymentEnvironment} from '../config';
-import {IMAGE_REPO, INFRA_REPO} from '../constants';
+import {IMAGE_REPO} from '../constants';
 import {BaseGCPStack, BaseGCPStackProps} from '../constructs';
 
 /**
@@ -69,31 +69,6 @@ export class WorkloadIdentityPoolStack extends BaseGCPStack {
           attributeCondition:
             `attribute.repository_owner_id == "115838707" &&
             attribute.repository == "${IMAGE_REPO}" &&
-            attribute.ref_type == "branch"`,
-          attributeMapping: {
-            'google.subject': 'assertion.sub',
-            'attribute.actor': 'assertion.actor',
-            'attribute.aud': 'assertion.aud',
-            'attribute.repository': 'assertion.repository',
-            'attribute.repository_owner_id': 'assertion.repository_owner_id',
-            'attribute.ref_type': 'assertion.ref_type',
-          },
-          oidc: {issuerUri: 'https://token.actions.githubusercontent.com'},
-        },
-    );
-    new IamWorkloadIdentityPoolProvider(
-        this,
-        'gh-identity-pool-provider-infra',
-        {
-          workloadIdentityPoolId: ghPool.workloadIdentityPoolId,
-          workloadIdentityPoolProviderId: 'github-actions-provider-infra',
-          displayName: 'GitHub Actions Provider - CDKTF',
-          description: 'Allows Github Actions to request access ' +
-            'tokens for deploying the Rails app and other ' +
-            'GCP infrastructure.',
-          attributeCondition:
-            `attribute.repository_owner_id == "44952665" &&
-            attribute.repository == "${INFRA_REPO}" &&
             attribute.ref_type == "branch"`,
           attributeMapping: {
             'google.subject': 'assertion.sub',
