@@ -131,7 +131,7 @@ If you are facing issues with the lock files from terraform that are not release
 ```
 # Switch out the project id depending on which environment is being deployed
 PROJECT_ID=<your-gcp-project-id>
-gsutil ls -r "gs://${PROJECT_ID}-terraform-backend/" | grep lock
+gsutil ls -r "gs://layhold-${PROJECT_ID}-terraform-backend/" | grep lock
 ```
 
 After that you will need to move to the directory for each locked stack and run:

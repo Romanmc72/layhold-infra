@@ -52,14 +52,5 @@ export class IamBindingStack extends BaseGCPStack {
       role: 'roles/writer',
       member: `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${props.githubDeploymentRepo}`,
     });
-
-    /**
-     * Allows the github repo to see and make changes to what API's are enabled.
-     */
-    new ProjectIamMember(this, 'services-management-permissions', {
-      project: this.provider.project!,
-      role: 'roles/servicemanagement.serviceConsumer',
-      member: `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${props.githubDeploymentRepo}`,
-    });
   }
 }
