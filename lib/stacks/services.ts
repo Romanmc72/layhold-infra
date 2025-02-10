@@ -34,6 +34,8 @@ export class ServicesStack extends BaseGCPStack {
       'artifactregistry',
       'bigquery',
       'cloudfunctions',
+      // required for cicd
+      'cloudresourcemanager',
       'compute',
       'dns',
       'eventarc',
