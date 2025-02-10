@@ -1,0 +1,30 @@
+name: Auto Deploy (Dev)
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - .gitignore
+      - .eslintrc.js
+      - jest.config.js
+      - "__tests__/**"
+
+jobs:
+  build:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build and Test
+      run: npm install && npm run test
+    - name: Log into GCP
+      uses: 'google-github-actions/auth@v2'
+      with:
+        project_id: layhold-app
+        workload_identity_provider: projects/625223699075/locations/global/workloadIdentityPools/github-actions/providers/github-actions-provider-infra
+    - name: Deploy
+      run: cdktf deploy "*-prod-*" --auto-approve

@@ -9,7 +9,6 @@ import {
 } from '@cdktf/provider-google/lib/project-iam-binding';
 import {ServiceAccount} from '@cdktf/provider-google/lib/service-account';
 import {ProjectIamMember} from '@cdktf/provider-google/lib/project-iam-member';
-import {TerraformVariable} from 'cdktf';
 import {Construct} from 'constructs';
 import {
   BaseGCPStack,
@@ -32,6 +31,12 @@ export interface CloudRunStackProps extends BaseGCPStackProps {
    * and connector.
    */
   vpcAccessConnectorId?: string;
+  /**
+   * The tag that is tied to the image to deploy from the artifact registry.
+   *
+   * @default 'latest'
+   */
+  imageTag?: string;
 }
 
 /**
@@ -70,13 +75,7 @@ export class CloudRunStack extends BaseGCPStack {
           project: this.provider.project!,
         },
     );
-    const imageTag = new TerraformVariable(this, 'imageTag', {
-      default: 'latest',
-      description: 'While building and pushing the Docker image, the tag ' +
-        'should be specified here so Cloud Run can deploy the correct image ' +
-        'version.',
-      type: 'string',
-    });
+    const {imageTag = 'latest'} = props;
     const cloudRunService = new CloudRunServiceWrapper(this, 'server', {
       name: RegistryName.RAILS_APP,
       region: this.provider.region!,
@@ -87,7 +86,7 @@ export class CloudRunStack extends BaseGCPStack {
         PROJECT_ID: env.projectId,
       },
       imageName: IMAGE_NAME,
-      imageTag: imageTag.value,
+      imageTag: imageTag,
       minScale: 1,
       maxScale: 1,
       memory: Memory.gigabytes(1),

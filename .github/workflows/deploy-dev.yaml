@@ -1,11 +1,15 @@
-name: Infrastructure CI
+name: Auto Deploy (Dev)
 
 on:
   push:
     branches:
-      - main
+      - "feature/**"
     paths-ignore:
       - README.md
+      - .gitignore
+      - .eslintrc.js
+      - jest.config.js
+      - "__tests__/**"
 
 jobs:
   build:
@@ -21,6 +25,6 @@ jobs:
       uses: 'google-github-actions/auth@v2'
       with:
         project_id: r0m4n-dev
-        workload_identity_provider: projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-actions/providers/github-actions-provider-infra
+        workload_identity_provider: projects/218289013170/locations/global/workloadIdentityPools/github-actions/providers/github-actions-provider-infra
     - name: Deploy
-      run: cdktf deploy "*-${ENVIRONMENT}-*""
+      run: cdktf deploy "*-dev-*" --auto-approve

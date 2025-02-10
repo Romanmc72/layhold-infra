@@ -3,22 +3,25 @@ import {DeploymentEnvironment} from './environments';
 import {
   CloudRunStack,
   ContainerRegistryStack,
+  IamBindingStack,
   RegistryName,
   ServicesStack,
   TerraformStateBucketStack,
   WorkloadIdentityPoolStack,
 } from '../stacks';
-import {BaseGCPStackProps} from '../constructs';
+import {BaseGCPStack, BaseGCPStackProps} from '../constructs';
 
 /**
  * Create a single environment.
  * @param {App} app The overall app this environment will exist in.
  * @param {DeploymentEnvironment} environment The settings specific to
+ * @param {string} imageTag The image to deploy
  * this environment.
  */
 export function deployEnvironment(
     app: App,
     environment: DeploymentEnvironment,
+    imageTag: string,
 ): void {
   const stateBucketStack = new TerraformStateBucketStack(
       app,
@@ -39,6 +42,14 @@ export function deployEnvironment(
       environment,
       baseStackProps,
   );
+  new IamBindingStack(
+      app,
+      environment, {
+        ...baseStackProps,
+        workloadIdentityPoolName:
+          workloadIdPoolStack.ghWorkloadIdentityPoolName,
+      },
+  );
   const registry = new ContainerRegistryStack(
       app,
       environment,
@@ -52,5 +63,6 @@ export function deployEnvironment(
     ...baseStackProps,
     registryPath: registry.getRegistryPath(RegistryName.RAILS_APP),
     dependsOn: [serviceStack, registry],
+    imageTag,
   });
 }

@@ -6,3 +6,6 @@ export const APP_NAME = 'layhold';
 
 /** The name of the github repo containing the image to build. */
 export const IMAGE_REPO = `${APP_NAME}/rails-app`;
+
+/** The name of the github repo containing this infrastructure code. */
+export const INFRA_REPO = 'Romanmc72/layhold-infra';
