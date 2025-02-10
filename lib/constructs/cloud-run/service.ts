@@ -261,7 +261,6 @@ export class CloudRunServiceWrapper extends CloudRunService {
       },
     };
     super(scope, id, {...props, ...properties});
-    console.log(`project: ${props.project}, region: ${props.region}, name: ${this.name}`);
     this.serviceName = join(
         'projects',
         props.project,
