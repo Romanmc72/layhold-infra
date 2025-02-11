@@ -56,6 +56,9 @@ export const PROD_ENVIRONMENT: DeploymentEnvironment = {
 };
 
 export const ENVIRONMENTS: DeploymentEnvironment[] = [
-  DEV_ENVIRONMENT,
   PROD_ENVIRONMENT,
 ];
+
+if (process.env.LAYHOLD_DEV_PROJECT_ID!) {
+  ENVIRONMENTS.push(DEV_ENVIRONMENT);
+}
