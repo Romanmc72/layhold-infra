@@ -32,6 +32,11 @@ export interface CloudRunStackProps extends BaseGCPStackProps {
    * and connector.
    */
   vpcAccessConnectorId?: string;
+  /**
+   * The principal set Github Actions will assume when controlling the secrets.
+   * @example `principalSet://iam.googleapis.com/${workloadIdentityPoolName}/attribute.repository/${IMAGE_REPO}`
+   */
+  githubActionsPrincipalSet: string;
 }
 
 /**
@@ -93,18 +98,22 @@ export class CloudRunStack extends BaseGCPStack {
         new SecretWithVersion(this, 'database-url', {
           secretId: 'NEON_DATABASE_URL',
           replication: {automatic: true},
+          iamMember: props.githubActionsPrincipalSet,
         }),
         new SecretWithVersion(this, 'main-encryption-key', {
           secretId: 'RAILS_MAIN_ENCRYPTION_KEY',
           replication: {automatic: true},
+          iamMember: props.githubActionsPrincipalSet,
         }),
         new SecretWithVersion(this, 'encrypted-secrets', {
           secretId: 'RAILS_ENCRYPTED_SECRETS',
           replication: {automatic: true},
+          iamMember: props.githubActionsPrincipalSet,
         }),
         new SecretWithVersion(this, 'email-api-key', {
           secretId: 'LAYHOLD_EMAIL_SECRET',
           replication: {automatic: true},
+          iamMember: props.githubActionsPrincipalSet,
         }),
       ],
       serviceAccount: this.serviceAccount,

@@ -7,7 +7,6 @@ import {
 import {Construct} from 'constructs';
 
 import {DeploymentEnvironment} from '../config';
-import {IMAGE_REPO} from '../constants';
 import {
   BaseGCPStack,
   BaseGCPStackProps,
@@ -71,12 +70,10 @@ export interface RegistryMapping {
  */
 export interface ContainerRegistryStackProps extends BaseGCPStackProps {
   /**
-   * The name of the workload identity pool that will
-   * be responsible for managing assets in the container registry.
-   * @example `projects/${project_number}/locations/global` +
-   *  `/workloadIdentityPools/${workload_identity_pool_id}`
+   * The iam principal set that github actions will assume.
+   * @example `principalSet://iam.googleapis.com/${workloadIdentityPoolName}/attribute.repository/${IMAGE_REPO}`
    */
-  workloadIdentityPoolName: string;
+  githubActionsPrincipalSet: string;
 }
 
 /**
@@ -107,7 +104,7 @@ export class ContainerRegistryStack extends BaseGCPStack {
       this.registryFactory(
           registryName,
           description,
-          `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${IMAGE_REPO}`,
+          props.githubActionsPrincipalSet,
       ),
     );
   }

@@ -38,6 +38,9 @@ export class WorkloadIdentityPoolStack extends BaseGCPStack {
   /** The name of the github workload pool. */
   public readonly ghWorkloadIdentityPoolName: string;
 
+  /** The iam member to use in member or binding statements. */
+  public readonly principalSet: string;
+
   /**
    * Create the stack to manage workload identities.
    * @param {Construct} scope The app that the stack lives in.
@@ -82,5 +85,6 @@ export class WorkloadIdentityPoolStack extends BaseGCPStack {
         },
     );
     this.ghWorkloadIdentityPoolName = ghPool.name;
+    this.principalSet = `principalSet://iam.googleapis.com/${this.ghWorkloadIdentityPoolName}/attribute.repository/${IMAGE_REPO}`;
   }
 }

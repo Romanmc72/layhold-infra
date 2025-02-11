@@ -9,7 +9,6 @@ import {
   TerraformStateBucketStack,
   WorkloadIdentityPoolStack,
 } from '../stacks';
-import {IMAGE_REPO} from '../constants';
 import {BaseGCPStackProps} from '../constructs';
 
 /**
@@ -45,9 +44,7 @@ export function deployEnvironment(
       app,
       environment, {
         ...baseStackProps,
-        githubDeploymentRepo: IMAGE_REPO,
-        workloadIdentityPoolName:
-          workloadIdPoolStack.ghWorkloadIdentityPoolName,
+        githubActionsPrincipalSet: workloadIdPoolStack.principalSet,
       },
   );
   const registry = new ContainerRegistryStack(
@@ -55,12 +52,12 @@ export function deployEnvironment(
       environment,
       {
         ...baseStackProps,
-        workloadIdentityPoolName:
-          workloadIdPoolStack.ghWorkloadIdentityPoolName,
+        githubActionsPrincipalSet: workloadIdPoolStack.principalSet,
       },
   );
   new CloudRunStack(app, environment, {
     ...baseStackProps,
+    githubActionsPrincipalSet: workloadIdPoolStack.principalSet,
     registryPath: registry.getRegistryPath(RegistryName.RAILS_APP),
     dependsOn: [serviceStack, registry],
   });

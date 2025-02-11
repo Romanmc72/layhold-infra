@@ -11,17 +11,8 @@ import {
  * The properties required to create the Iam Binding Stack.
  */
 export interface IamBindingStackProps extends BaseGCPStackProps {
-  /**
-   * The name of the workload identity pool that will
-   * be responsible for managing all GCP resources.
-   * @example `projects/${project_number}/locations/global` +
-   *  `/workloadIdentityPools/${workload_identity_pool_id}`
-   */
-  workloadIdentityPoolName: string;
-  /**
-   * The github repository that is allowed to modify our GCP projects.
-   */
-  githubDeploymentRepo: string;
+  /** The principal set to grant github actions permissions to. */
+  githubActionsPrincipalSet: string;
 }
 
 /**
@@ -50,7 +41,7 @@ export class IamBindingStack extends BaseGCPStack {
     new ProjectIamMember(this, 'infra-permissions', {
       project: this.provider.project!,
       role: 'roles/writer',
-      member: `principalSet://iam.googleapis.com/${props.workloadIdentityPoolName}/attribute.repository/${props.githubDeploymentRepo}`,
+      member: props.githubActionsPrincipalSet,
     });
   }
 }
