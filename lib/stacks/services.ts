@@ -50,7 +50,10 @@ export class ServicesStack extends BaseGCPStack {
     servicesToEnable.forEach((service: string) => new ProjectService(
         this,
         `${service}-api`,
-        {service: `${service}.googleapis.com`},
+        {
+          service: `${service}.googleapis.com`,
+          project: props.projectId,
+        },
     ));
   }
 }

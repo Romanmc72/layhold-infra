@@ -43,12 +43,15 @@ export class TerraformStateBucketStack extends TerraformStack {
     // The GCP IAM, KMS, and Storage APIs needs to be enabled before creating
     // the terraform state bucket
     const iamApi = new ProjectService(this, 'iam-api', {
+      project: props.projectId,
       service: 'iam.googleapis.com',
     });
     const kmsApi = new ProjectService(this, 'kms-api', {
+      project: props.projectId,
       service: 'cloudkms.googleapis.com',
     });
     const storageApi = new ProjectService(this, 'storage-api', {
+      project: props.projectId,
       service: 'storage.googleapis.com',
     });
     const backendBucketName = getBackendBucketName(props.projectId);
